@@ -24,7 +24,7 @@ from Qt.QtCore import (
     QSize,
 )
 
-from rboust_skin_weights_transfer import logic
+from robust_skin_weights_transfer_inpaint import logic
 
 
 if sys.version_info > (3, 0):
@@ -376,28 +376,51 @@ class WeightTransferInpaintMainWidget(MayaQWidgetBaseMixin, QWidget):
         # type: () -> None
         """Inpaint the vertices to transfer weights from."""
 
-        if not self.unconfident_vertices:
-            cmds.warning("No vertices to inpaint")
+        force = False
+
+        dst = cmds.ls(sl=True, objectsOnly=True)
+        if not dst:
+            cmds.warning("Nothing is selected")
+            return
+        dst = dst[0]
+
+        if dst != self.dst_line_edit.text():
+            confirm = cmds.confirmDialog(
+                title="Confirm",
+                message="Selected mesh does not match destination mesh. Continue?",
+                button=["Yes", "No"],
+                defaultButton="Yes",
+                cancelButton="No",
+                dismissString="No"
+            )
+            if confirm == "No":
+                return
+            else:
+                force = True
+
+        selection = cmds.ls(sl=True, flatten=True)
+        vertices = cmds.filterExpand(selection, selectionMask=31, expand=True)
+        if not vertices:
+            cmds.warning("No vertices selected")
             return
 
-        src = self.src_line_edit.text()
-        dst = self.dst_line_edit.text()
-
-        if not src or not dst:
-            cmds.warning("Source and destination meshes must be set")
-            return
-
-        if src == dst:
-            cmds.warning("Source and destination meshes must be different")
-            return
-
-        if not cmds.objExists(src) or not cmds.objExists(dst):
-            cmds.warning("Source and destination meshes must exist")
-            return
+        vertices = [int(v.split("[")[-1].split("]")[0]) for v in vertices if dst in v]
+        if not force and set(vertices) != set(self.unconfident_vertices):
+            confirm = cmds.confirmDialog(
+                title="Confirm",
+                message="Selected vertices do not match unconfident vertices. Continue?",
+                button=["Yes", "No"],
+                defaultButton="Yes",
+                cancelButton="No",
+                dismissString="No"
+            )
+            if confirm == "No":
+                return
 
         try:
             logic.get_skincluster(dst)
         except RuntimeError:
+            src = self.src_line_edit.text()
             logic.transfer_weights(src, dst)
 
         # Inpaint the weights

@@ -585,7 +585,12 @@ def __do_inpainting(mesh, known_weights):
 
     W[S_nomatch, :] = W_U
 
-    # apply constraints, normalize each row to sum to 1
+    # apply constraints,
+
+    # each element is between 0 and 1
+    W = np.clip(W, 0.0, 1.0)
+
+    # normalize each row to sum to 1
     W = W / W.sum(axis=1, keepdims=True)
 
     return W
