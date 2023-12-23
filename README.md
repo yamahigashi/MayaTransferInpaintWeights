@@ -7,10 +7,39 @@ This Autodesk Maya plugin introduces a two-stage skin weight transfer process, e
 
 
 ## Installation
+- Download the [zip](https://github.com/yamahigashi/MayaTransferInpaintWeights/releases/download/v0.0.1/MayaTransferInpaintWeights.zip) file from the [Releases page](https://github.com/yamahigashi/MayaTransferInpaintWeights/releases).
+- Unzip the downloaded file.
+- Place the unzipped files in a folder that is recognized by the `MAYA_MODULE_PATH`, using one of the following methods:
 
-## Compatibility
+```
+a. Place it in the `MyDocuments\maya\modules` folder within your Documents.
+b. Place it in any location and register that location in the system's environment variables.
+```
+
+If you are not familiar with handling environment variables, method a. is recommended. Here's a detailed explanation for method a.:
+
+- Open the My Documents folder.
+- If there is no `modules` folder inside the maya folder, create one.
+- Place the unzipped files in this newly created folder.
+
+<img src="https://raw.githubusercontent.com/yamahigashi/MayaUvSnapshotPlus/doc/doc/Screenshot_612.png" width="660">
 
 ## Usage
+
+### startup
+1. Open Autodesk Maya.
+2. Launch the tool, Go to the `Main Menu and select Window > Skin Weight Transfer Inpaint`.
+3. If instructions for installing `numpy` and `scipy` appear, please follow the dialog instructions, open the command prompt, and execute the specified commands.
+4. If already installed, a window will appear.
+
+### Operation
+The operation within the window is categorized into the following two stages:
+
+1. Classify vertices between src/dst into high precision and low precision, i.e., vertices that require inpainting.
+2. Perform inpainting on vertices with low precision or on currently selected vertices.
+
+![image](https://github.com/yamahigashi/MayaTransferInpaintWeights/assets/523673/532fb6ef-5289-4939-9bc4-5bc540a30722)
+
 
 ## Citation
 If you use this unofficial implementation in your work, please cite the original paper as follows:
