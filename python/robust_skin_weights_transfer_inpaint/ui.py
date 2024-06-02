@@ -4,6 +4,7 @@ import sys
 from maya import cmds
 from maya.app.general.mayaMixin import MayaQWidgetBaseMixin
 
+from .vendor import Qt
 from Qt.QtWidgets import (  # type: ignore
     QApplication,
     QWidget,
