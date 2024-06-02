@@ -439,6 +439,7 @@ def add_laplacian_entry_in_place(L, tri_positions, tri_indices):
     # calculate cotangent
     cotan1 = compute_cotangent(v2, v1, v3)
     cotan2 = compute_cotangent(v1, v2, v3)
+    cotan3 = compute_cotangent(v1, v3, v2)
 
     # update laplacian matrix
     L[i1, i2] += cotan1  # type: ignore
@@ -450,6 +451,11 @@ def add_laplacian_entry_in_place(L, tri_positions, tri_indices):
     L[i3, i2] += cotan2  # type: ignore
     L[i2, i2] -= cotan2  # type: ignore
     L[i3, i3] -= cotan2  # type: ignore
+
+    L[i1, i3] += cotan3  # type: ignore
+    L[i3, i1] += cotan3  # type: ignore
+    L[i1, i1] -= cotan3  # type: ignore
+    L[i3, i3] -= cotan3  # type: ignore
 
 
 def add_area_in_place(areas, tri_positions, tri_indices):
