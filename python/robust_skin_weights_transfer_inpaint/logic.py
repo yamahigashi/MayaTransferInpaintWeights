@@ -54,7 +54,10 @@ def timeit(func):
         start_time = time.time()
         result = func(*args, **kwargs)
         end_time = time.time()
-        logger.debug(f"{func.__name__} の実行時間: {end_time - start_time} 秒")
+        logger.debug("Execution time of {func.__name__}: {elapsed} seconds".format(
+            func=func,
+            elapsed=(end_time - start_time)
+        ))
         return result
     return wrapper
 
@@ -336,7 +339,8 @@ def transfer_weights(source_mesh, target_mesh, confident_vertex_indices=None):
         cmds.delete(dst_skin_cluster_name)
         dst_skin_cluster_name = get_or_create_skincluster(target_mesh.name(), src_deformer_bones)
 
-    # TODO: confident_vertex_indices のみ対象とするか
+    # TODO:
+    # Should we only target confident_vertex_indices?
     cmds.copySkinWeights(
         sourceSkin=src_skin_cluster_name,  
         destinationSkin=dst_skin_cluster_name,
@@ -561,7 +565,8 @@ def __do_inpainting(mesh, known_weights):
     # type: (om.MFnMesh, Dict[int, np.ndarray]) -> np.ndarray
 
     L, M = compute_laplacian_and_mass_matrix(mesh)
-    Q = -L + L @ sp.diags(np.reciprocal(M.diagonal())) @ L
+    # Q = -L + L @ sp.diags(np.reciprocal(M.diagonal())) @ L  # @ operator is not supported for python 2...
+    Q = -L + np.dot(L, sp.diags(np.reciprocal(M.diagonal())).dot(L))
 
     S_match = np.array(list(known_weights.keys()))
     S_nomatch = np.array(list(set(range(mesh.numVertices)) - set(S_match)))
@@ -580,7 +585,8 @@ def __do_inpainting(mesh, known_weights):
     W_U = W[S_nomatch, :]
 
     for bone_idx in range(num_bones):
-        b = -Q_UI @ W_I[:, bone_idx]
+        # b = -Q_UI @ W_I[:, bone_idx]  # @ operator is not supported for python 2...
+        b = -np.dot(Q_UI, W_I[:, bone_idx])
         W_U[:, bone_idx] = splinalg.spsolve(Q_UU, b)
 
     W[S_nomatch, :] = W_U
@@ -658,9 +664,9 @@ def apply_weight_inpainting(target_mesh, optimized_weights, unconvinced_vertex_i
 
 def calculate_threshold_distance(mesh, threadhold_ratio=0.05):
     # type: (om.MFnMesh, float) -> float
-    """Returns 𝑑𝑏𝑜𝑥 * 0.05
+    """Returns dbox * 0.05
 
-    𝑑𝑏𝑜𝑥 is the target mesh bounding box diagonal length.
+    dbox is the target mesh bounding box diagonal length.
     """
 
     bbox = mesh.boundingBox
